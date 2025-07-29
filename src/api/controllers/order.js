@@ -60,7 +60,6 @@ const createOrder = async (req, res, next) => {
 
     return res.status(201).json(order);
   } catch (error) {
-    console.log(error);
     return res.status(400).json('Error al crear el pedido');
   }
 };

@@ -41,10 +41,33 @@ const filterWorkshops = async (req, res, next) => {
   try {
     const workshops = await Workshop.find({
       $text: { $search: req.params.title }
-    });
+    })
+      .populate({
+        path: 'user',
+        select: 'name'
+      })
+      .populate({
+        path: 'attendees',
+        select: 'name'
+      })
+      .populate({
+        path: 'likes',
+        select: 'name'
+      })
+      .populate({
+        path: 'dislikes',
+        select: 'name'
+      })
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name'
+        },
+        select: 'text user'
+      });
     return res.status(200).json(workshops);
   } catch (error) {
-    console.log(error);
     return res.status(400).json('Error en el filtrado de talleres');
   }
 };
@@ -52,7 +75,31 @@ const filterWorkshops = async (req, res, next) => {
 const getWorkshopById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const workshop = await Workshop.findById(id).populate('user', 'name');
+    const workshop = await Workshop.findById(id)
+      .populate({
+        path: 'user',
+        select: 'name'
+      })
+      .populate({
+        path: 'attendees',
+        select: 'name'
+      })
+      .populate({
+        path: 'likes',
+        select: 'name'
+      })
+      .populate({
+        path: 'dislikes',
+        select: 'name'
+      })
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name'
+        },
+        select: 'text user'
+      });
     return res.status(200).json(workshop);
   } catch (error) {
     return res.status(400).json('Error al recuperar el taller');
@@ -121,8 +168,6 @@ const deleteWorkshop = async (req, res, next) => {
       .status(200)
       .json({ message: 'Taller eliminado:', workshopDeleted });
   } catch (error) {
-    console.log(error);
-
     return res.status(400).json({ message: 'Error al eliminar el taller' });
   }
 };

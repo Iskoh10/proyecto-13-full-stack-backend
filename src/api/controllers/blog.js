@@ -4,7 +4,26 @@ const Blog = require('../models/blog');
 
 const getBlogs = async (req, res, next) => {
   try {
-    const blogs = await Blog.find().populate('user', 'name');
+    const blogs = await Blog.find()
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      })
+      .populate({
+        path: 'likes',
+        select: 'name'
+      })
+      .populate({
+        path: 'dislikes',
+        select: 'name'
+      })
+      .populate({
+        path: 'user',
+        select: 'name'
+      });
     return res.status(200).json(blogs);
   } catch (error) {
     return res
@@ -17,10 +36,28 @@ const filterBlogs = async (req, res, next) => {
   try {
     const blogs = await Blog.find({
       $text: { $search: req.params.summary }
-    });
+    })
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      })
+      .populate({
+        path: 'likes',
+        select: 'name'
+      })
+      .populate({
+        path: 'dislikes',
+        select: 'name'
+      })
+      .populate({
+        path: 'user',
+        select: 'name'
+      });
     return res.status(200).json(blogs);
   } catch (error) {
-    console.log(error);
     return res.status(400).json('Error en el filtrado de blogs');
   }
 };
@@ -28,7 +65,26 @@ const filterBlogs = async (req, res, next) => {
 const getBlogById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const blog = await Blog.findById(id).populate('user', 'name');
+    const blog = await Blog.findById(id)
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      })
+      .populate({
+        path: 'likes',
+        select: 'name'
+      })
+      .populate({
+        path: 'dislikes',
+        select: 'name'
+      })
+      .populate({
+        path: 'user',
+        select: 'name'
+      });
     return res.status(200).json(blog);
   } catch (error) {
     return res
@@ -59,7 +115,6 @@ const createBlog = async (req, res, next) => {
     const blog = await newBlog.save();
     return res.status(201).json(blog);
   } catch (error) {
-    console.log(error);
     return res
       .status(400)
       .json({ message: 'Error al crear la entrada del blog' });

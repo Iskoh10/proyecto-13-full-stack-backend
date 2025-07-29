@@ -5,7 +5,10 @@ const User = require('../models/user');
 
 const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
+    const users = await User.find().populate({
+      path: 'comments',
+      select: 'text'
+    });
     return res
       .status(200)
       .json({ message: 'Estos son los usuarios registrados:', users });
@@ -18,7 +21,10 @@ const getUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate({
+      path: 'comments',
+      select: 'text'
+    });
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -36,7 +42,10 @@ const filterByUsername = async (req, res, next) => {
       name: { $regex: req.params.name, $options: 'i' }
     };
 
-    const users = await User.find(query);
+    const users = await User.find(query).populate({
+      path: 'comments',
+      select: 'text'
+    });
     return res.status(200).json({ message: 'Hemos encontrado a:', users });
   } catch (error) {
     return res.status(400).json('Error en la recuperación de usuarios');

@@ -13,7 +13,7 @@ const {
 const productRouter = require('express').Router();
 
 productRouter.get('/filter', filterProducts);
-productRouter.get('/:id', [isAdmin], getProductById);
+productRouter.get('/:id', [isAuth, isAdmin], getProductById);
 productRouter.get('/', getProducts);
 productRouter.post(
   '/',

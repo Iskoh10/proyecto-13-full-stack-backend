@@ -2,6 +2,7 @@ const Comment = require('../models/comment');
 const Product = require('../models/product');
 const Workshop = require('../models/workshop');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 const getComments = async (req, res, next) => {
   try {
@@ -65,8 +66,6 @@ const getCommentById = async (req, res, next) => {
 
     return res.status(200).json(comment);
   } catch (error) {
-    console.log(error);
-
     return res.status(400).json('Error al recuperar el comentario');
   }
 };
@@ -74,6 +73,7 @@ const getCommentById = async (req, res, next) => {
 const createComment = async (req, res, next) => {
   const { text, target, eventId } = req.body;
   const userId = req.user._id;
+
   try {
     const newComment = new Comment({
       text,
@@ -98,10 +98,14 @@ const createComment = async (req, res, next) => {
       { new: true }
     );
 
+    await User.findByIdAndUpdate(
+      userId,
+      { $push: { comments: comment._id } },
+      { new: true }
+    );
+
     return res.status(201).json(comment);
   } catch (error) {
-    console.log(error);
-
     return res.status(400).json('Error al crear el comentario');
   }
 };

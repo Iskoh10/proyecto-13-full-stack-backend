@@ -20,6 +20,13 @@ const getProducts = async (req, res, next) => {
     }
 
     const products = await Product.find()
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      })
       .skip((page > lastPage ? lastPage - 1 : page - 1) * dataPerPage)
       .limit(dataPerPage);
 
@@ -28,8 +35,7 @@ const getProducts = async (req, res, next) => {
       products
     });
   } catch (error) {
-    console.log(error);
-    return res.status(400).json('error');
+    return res.status(400).json('Error al recuperar todos los productos');
   }
 };
 
@@ -50,12 +56,16 @@ const filterProducts = async (req, res, next) => {
       filters.price = { $lte: Number(req.query.price) };
     }
 
-    const products = await Product.find(filters);
+    const products = await Product.find(filters).populate({
+      path: 'comments',
+      populate: {
+        path: 'user',
+        select: 'name lastName'
+      }
+    });
 
     return res.status(200).json(products);
   } catch (error) {
-    console.log(error);
-
     return res.status(400).json('Error al filtrar los productos');
   }
 };
@@ -63,7 +73,13 @@ const filterProducts = async (req, res, next) => {
 const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate({
+      path: 'comments',
+      populate: {
+        path: 'user',
+        select: 'name lastName'
+      }
+    });
     return res.status(200).json(product);
   } catch (error) {
     return res.status(400).json('error');
@@ -82,7 +98,6 @@ const createProduct = async (req, res, next) => {
     const product = await newProduct.save();
     return res.status(201).json(product);
   } catch (error) {
-    console.log(error);
     return res.status(400).json('Error al crear el nuevo producto');
   }
 };
@@ -97,7 +112,6 @@ const updateProduct = async (req, res, next) => {
       file: req.file
     });
 
-    console.log(updated);
     return res.status(200).json({
       message: 'El producto se ha actualizado correctamente',
       updated
@@ -108,7 +122,6 @@ const updateProduct = async (req, res, next) => {
     } else if (error.message === 'Evento no encontrado') {
       return res.statu(404).json('Producto no encontrado');
     }
-    console.log(error);
     return res
       .status(400)
       .json({ message: `Error en la actualización del producto` });
