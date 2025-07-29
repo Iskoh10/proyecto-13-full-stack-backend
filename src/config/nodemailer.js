@@ -12,7 +12,7 @@ const mailOptions = ({ email, password }) => {
   return {
     from: process.env.EMAIL_ADDRESS,
     to: email,
-    subject: 'Nueva cuenta en Projects RTC',
+    subject: 'Nueva cuenta en el Obrador',
     html: getHTML({ email, password })
   };
 };
@@ -20,7 +20,7 @@ const mailOptions = ({ email, password }) => {
 const getHTML = ({ email, password }) => {
   return `
   <div>
-  <h2>Un administrador te ha creado una cuenta en la pagina comunitaria de Proyectos de RTC</h2>
+  <h2>Muchas gracias por haber creado una cuenta en nuestra pagina</h2>
   <h4>Tu usuario: ${email}</h4>
   <h4>Tu cotraseña: ${password}</h4>
     <a href="#"><p>Haz click aquí para ir a la página y cambiar tu contraseña</p>
