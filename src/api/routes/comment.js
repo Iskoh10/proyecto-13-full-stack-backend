@@ -13,7 +13,7 @@ const commentRouter = require('express').Router();
 
 commentRouter.get('/filter/:text', [isAuth, isAdmin], filterComments);
 commentRouter.get('/:id', [isAuth, isAdmin], getCommentById);
-commentRouter.get('/', [isAuth, isAuth], getComments);
+commentRouter.get('/', [isAuth, isAdmin], getComments);
 commentRouter.post('/', [isAuth], createComment);
 commentRouter.put('/:id', [isAuth, checkUser()], updateComment);
 commentRouter.delete('/:id', [isAuth, checkUser()], deleteComment);
