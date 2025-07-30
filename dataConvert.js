@@ -137,5 +137,3 @@ fs.writeFileSync(
   )};\n\nmodule.exports = orders;\n`,
   'utf8'
 );
-
-//! Tengo que añadir instruccones de como utilizar este archivo, primero users, modificar los productos y comentar el users, luego hacer lo mismo con products modificar el csv para order e insertarlos, ya que uno de depende de otro y estamos generando los _id aleatorios.

@@ -1,5 +1,4 @@
 const { isAuth, isAdmin } = require('../../middlewares/auth');
-const { checkUser } = require('../../middlewares/checkUser');
 const upload = require('../../middlewares/file');
 const {
   filterBlogs,
