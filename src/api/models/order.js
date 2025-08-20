@@ -17,7 +17,8 @@ const orderSchema = new mongoose.Schema(
       default: 'pending',
       required: true
     },
-    notes: { type: String }
+    notes: { type: String },
+    stripeSessionId: { type: String }
   },
   {
     timestamps: true

@@ -3,7 +3,7 @@ const { jwtVerify } = require('../utils/jwt');
 
 const isAuth = async (req, res, next) => {
   try {
-    const token = req.headers.authorization.replace('Bearer ', '');
+    const token = req.cookies.token;
     const { id } = jwtVerify(token);
 
     const user = await User.findById(id);

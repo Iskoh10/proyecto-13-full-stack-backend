@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema(
     address: { type: String, required: true },
     phone: { type: Number, required: true },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    comments: [{ type: mongoose.Types.ObjectId, ref: 'comments' }]
+    comments: [{ type: mongoose.Types.ObjectId, ref: 'comments' }],
+    isDeleted: { type: Boolean, default: false }
   },
   {
     timestamps: true

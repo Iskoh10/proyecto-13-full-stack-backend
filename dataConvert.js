@@ -50,7 +50,6 @@ const data = fs.readFileSync(pathName, 'utf8');
 const rows = data.split('\n');
 
 const headers = parseCSVLine(rows[0]);
-console.log(headers);
 
 const users = [];
 const products = [];

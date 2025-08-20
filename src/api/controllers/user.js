@@ -68,7 +68,20 @@ const register = async (req, res, next) => {
 
     sendEmail({ email: newUser.email, password: req.body.password });
 
-    return res.status(201).json({ message: 'Usuario creado: ', user });
+    const token = generateSign(newUser._id);
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24
+    });
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    return res
+      .status(201)
+      .json({ message: 'Usuario creado: ', userWithoutPassword });
   } catch (error) {
     return res
       .status(400)
@@ -84,37 +97,58 @@ const login = async (req, res, next) => {
     if (!user)
       return res.status(400).json({ message: 'Usuario o contraseña erróneos' });
 
+    if (user.isDeleted) {
+      return res.status(403).json({ message: 'Usuario eliminado' });
+    }
+
     const isMatch = await comparePassword(password, user.password);
 
     if (isMatch) {
       const token = generateSign(user._id);
-      return res.status(200).json({ token, user });
+      const userNoPassword = user.toObject();
+      delete userNoPassword.password;
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24
+      });
+      return res.status(200).json({ user: userNoPassword });
     } else {
       return res.status(400).json({ message: 'Usuario o contraseña erróneos' });
     }
   } catch (error) {
-    return res.status(400).json({ message: 'Error al loguearte' });
+    return res.status(500).json({ message: 'Error al loguearte' });
   }
+};
+
+const logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  return res.status(200).json({ message: 'Sesión cerrada' });
 };
 
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const newUser = new User(req.body);
+
     const oldUser = await User.findById(id);
+    if (!oldUser) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
 
-    newUser._id = id;
-    newUser.role = 'user';
-    newUser.comments = [
-      ...(oldUser.comments || []),
-      ...(newUser.comments || [])
-    ];
-    newUser.messages = [
-      ...(oldUser.messages || []),
-      ...(newUser.messages || [])
-    ];
+    const updatedData = {
+      ...oldUser.toObject(),
+      ...req.body,
+      role: oldUser.role,
+      comments: [...(oldUser.comments || []), ...(req.body.comments || [])],
+      message: [...(oldUser.messages || []), ...(req.body.messages || [])]
+    };
 
-    const user = await User.findByIdAndUpdate(id, newUser, { new: true });
+    const user = await User.findByIdAndUpdate(id, updatedData, { new: true });
 
     return res
       .status(200)
@@ -126,9 +160,26 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const userDeleted = await User.findOneAndDelete(id);
-    return res.status(200).json({ message: 'Usuario elminado: ', userDeleted });
+    const userId = req.user._id;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        name: 'Usuario Eliminado',
+        email: `deleted_${userId}@example.com`,
+        phone: null,
+        address: null,
+        password: '!',
+        isDeleted: true
+      },
+      {
+        new: true
+      }
+    );
+
+    res.clearCookie('token');
+
+    return res.status(200).json({ message: 'Usuario eliminado correctamente' });
   } catch (error) {
     return res.status(400).json({ message: 'Error al eliminar al usuario' });
   }
@@ -140,6 +191,7 @@ module.exports = {
   filterByUsername,
   register,
   login,
+  logout,
   updateUser,
   deleteUser
 };

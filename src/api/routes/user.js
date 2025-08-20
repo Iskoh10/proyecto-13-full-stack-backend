@@ -4,7 +4,6 @@ const {
   register,
   getUsers,
   getUser,
-  login,
   updateUser,
   deleteUser,
   filterByUsername
@@ -13,9 +12,8 @@ const {
 const userRouter = require('express').Router();
 
 userRouter.post('/register', register);
-userRouter.post('/login', login);
+userRouter.delete('/deleteUser', [isAuth], deleteUser);
 userRouter.put('/:id', [isAuth, checkUser()], updateUser);
-userRouter.delete('/:id', [isAuth, checkUser()], deleteUser);
 userRouter.get('/by-name/:name', [isAuth, isAdmin], filterByUsername);
 userRouter.get('/:id', [isAuth, isAdmin], getUser);
 userRouter.get('/', [isAuth, isAdmin], getUsers);

@@ -41,7 +41,6 @@ const getProducts = async (req, res, next) => {
 
 const filterProducts = async (req, res, next) => {
   try {
-    console.log('Query recibida:', req.query);
     const filters = {};
 
     if (req.query.nameProduct) {
@@ -56,15 +55,31 @@ const filterProducts = async (req, res, next) => {
       filters.price = { $lte: Number(req.query.price) };
     }
 
-    const products = await Product.find(filters).populate({
-      path: 'comments',
-      populate: {
-        path: 'user',
-        select: 'name lastName'
-      }
-    });
+    const page = parseInt(req.query.page) || 1;
+    const total = await Product.countDocuments(filters);
+    const lastPage = Math.ceil(total / dataPerPage);
 
-    return res.status(200).json(products);
+    const products = await Product.find(filters)
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      })
+      .skip((page - 1) * dataPerPage)
+      .limit(dataPerPage);
+
+    return res.status(200).json({
+      info: {
+        total,
+        pages: lastPage,
+        currentPage: page,
+        next: page < lastPage ? page + 1 : null,
+        prev: page > 1 ? page - 1 : null
+      },
+      products
+    });
   } catch (error) {
     return res.status(400).json('Error al filtrar los productos');
   }
@@ -120,8 +135,9 @@ const updateProduct = async (req, res, next) => {
     if (error.message === 'Imagen no encontrada') {
       return res.status(404).json('Imagen no encontrada');
     } else if (error.message === 'Evento no encontrado') {
-      return res.statu(404).json('Producto no encontrado');
+      return res.status(404).json('Producto no encontrado');
     }
+
     return res
       .status(400)
       .json({ message: `Error en la actualización del producto` });

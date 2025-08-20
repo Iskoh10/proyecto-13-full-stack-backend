@@ -26,12 +26,31 @@ const filterOrders = async (req, res, next) => {
 const getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     const order = await Order.findById(id)
-      .populate('customer', 'name')
-      .populate('items.product', 'nameProduct');
+      .populate('customer', 'name lastName email address phone')
+      .populate('items.product', 'nameProduct price');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Pedido no encontrada' });
+    }
+
     return res.status(200).json(order);
   } catch (error) {
     return res.status(400).json('Error al recuperar el pedido', id);
+  }
+};
+
+const getOrdersByUser = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const orders = await Order.find({ customer: userId })
+      .populate('customer', 'name email')
+      .populate('items.product', 'nameProduct price');
+
+    return res.status(200).json(orders);
+  } catch (error) {
+    return res.status(400).json({ message: 'Error al recuperar tus pedidos ' });
   }
 };
 
@@ -125,6 +144,7 @@ module.exports = {
   getOrders,
   filterOrders,
   getOrderById,
+  getOrdersByUser,
   createOrder,
   updateOrder,
   deleteOrder

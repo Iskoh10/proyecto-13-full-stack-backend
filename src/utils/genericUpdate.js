@@ -19,7 +19,6 @@ const genericUpdate = async ({
     likes = normalizeToArray(likes);
     dislikes = normalizeToArray(dislikes);
     attendees = normalizeToArray(attendees);
-    if (ratings) ratings = JSON.parse(ratings);
 
     const event = await Model.findById(id);
 
@@ -63,10 +62,10 @@ const genericUpdate = async ({
 
     const isOwner = event.user._id.toString() === user._id.toString();
 
-    if (isOwner && Object.keys(updateData).length > 0) {
-      updateOps.$set = { ...updateData };
-    } else {
-      throw new Error('No eres el creador de este producto.');
+    if (isOwner) {
+      if (Object.keys(updateData).length > 0) {
+        updateOps.$set = { ...updateData };
+      }
     }
 
     if (Array.isArray(comments) && comments.length > 0) {
@@ -97,35 +96,45 @@ const genericUpdate = async ({
       };
     }
 
+    let updated;
+
     if (Array.isArray(ratings) && ratings.length > 0) {
-      for (const rating of ratings) {
-        const userIdObj = new mongoose.Types.ObjectId(rating.userId);
+      const userId = new mongoose.Types.ObjectId(user._id);
+      const productId = new mongoose.Types.ObjectId(id);
 
-        const prevRating = await Model.findOne({
-          _id: id,
-          'ratings.userId': userIdObj
-        });
+      await Promise.all(
+        ratings.map(async (rating) => {
+          const prevRating = await Model.findOne({
+            _id: productId,
+            'ratings.userId': userId
+          });
 
-        if (prevRating) {
-          await Model.updateOne(
-            { _id: id, 'ratings.userId': userIdObj },
-            { $set: { 'ratings.$.value': rating.value } }
-          );
-        } else {
-          await Model.updateOne({ _id: id }, { $push: { ratings: rating } });
-        }
-      }
+          if (prevRating) {
+            const result = await Model.updateOne(
+              { _id: id, 'ratings.userId': userId },
+              { $set: { 'ratings.$.value': rating.value } }
+            );
+          } else {
+            const result = await Model.updateOne(
+              { _id: id },
+              { $push: { ratings: { userId: userId, value: rating.value } } }
+            );
+          }
+        })
+      );
     }
 
     if (Object.keys(updateOps).length > 0) {
-      const updated = await Model.findByIdAndUpdate(id, updateOps, {
+      updated = await Model.findByIdAndUpdate(id, updateOps, {
         new: true
       });
-      return updated;
+    } else {
+      updated = await Model.findById(id);
     }
-    return event;
+    return updated;
   } catch (error) {
     throw error;
   }
 };
+
 module.exports = { genericUpdate };
