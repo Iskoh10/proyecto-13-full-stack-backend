@@ -63,6 +63,7 @@ Una API RESTful que te permite gestionar toda la lógica de negocio de una panad
 | ------------------- | ------ | --------------------- | ------------------- | ----------------------------------------------- | ---------------- | ---------- |
 | CREATE ORDER        | POST   | /orders               | isAuth              | {**deliveryDate, items [{product, quantity}]**} | application/json | {order}    |
 | GET ORDERS          | GET    | /orders               | isAdmin             | ---                                             | ---              | [ orders ] |
+| GET ORDERS BY USER  | GET    | /my-orders            | isAuth              | ---                                             | ---              | [ orders ] |
 | GET ORDER BY ID     | GET    | /orders/:id           | isAdmin             | ---                                             | ---              | { order }  |
 | GET ORDER BY FILTER | GET    | orders/filter/:status | isAdmin             | ---                                             | ---              | [ orders ] |
 | MODIFY ORDER        | PUT    | /orders/:id           | isAdmin or sameUser | **order data**                                  | application/json | { order }  |
