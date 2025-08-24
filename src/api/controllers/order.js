@@ -4,7 +4,7 @@ const Order = require('../models/order');
 const getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find()
-      .populate('customer', 'name')
+      .populate('customer', 'name lastName')
       .populate('items.product', 'nameProduct');
     return res.status(200).json(orders);
   } catch (error) {

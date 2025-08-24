@@ -132,27 +132,54 @@ const createWorkshop = async (req, res, next) => {
 
 const updateWorkshop = async (req, res, next) => {
   try {
-    const updated = await genericUpdate({
-      id: req.params.id,
-      user: req.user,
-      body: req.body,
-      Model: Workshop,
-      filePdf: req.file
-    });
+    const { id } = req.params;
+    const { action } = req.body;
 
-    return res.status(200).json({
-      message: 'El Taller se ha actualizado correctamente',
-      updated
-    });
-  } catch (error) {
-    if (error.message === 'Imagen no encontrada') {
-      return res.status(404).json('Pdf no encontrada');
-    } else if (error.message === 'Evento no encontrado') {
-      return res.status(404).json('Taller no encontrado');
+    const workshop = await Workshop.findById(id);
+
+    if (!workshop) return res.status(404).json('Taller no encontrado');
+
+    const userId = req.user._id;
+
+    if (action === 'like') {
+      workshop.dislikes = workshop.dislikes.filter(
+        (user) => user.toString() !== userId.toString()
+      );
+      if (!workshop.likes.includes(userId)) {
+        workshop.likes.push(userId);
+      }
+    } else if (action === 'dislike') {
+      workshop.likes = workshop.likes.filter(
+        (user) => user.toString() !== userId.toString()
+      );
+      if (!workshop.dislikes.includes(userId)) {
+        workshop.dislikes.push(userId);
+      }
+      await workshop.save();
+    } else if (req.body.body || req.body.title || req.files) {
+      await genericUpdate({
+        id,
+        user: req.user,
+        body: req.body,
+        Model: Workshop,
+        files: req.files
+      });
     }
-    return res
-      .status(400)
-      .json({ message: `Error en la actualización del taller` });
+
+    const updated = await Workshop.findById(workshop._id)
+      .populate({
+        path: 'comments',
+        populate: { path: 'user', select: 'name lastName' }
+      })
+      .populate({ path: 'likes', select: 'name' })
+      .populate({ path: 'dislikes', select: 'name' })
+      .populate({ path: 'user', select: 'name' });
+
+    return res.status(200).json(updated);
+  } catch (error) {
+    return res.status(400).json({
+      message: `Error en la actualización del taller: ${error.message}`
+    });
   }
 };
 

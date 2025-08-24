@@ -123,27 +123,57 @@ const createBlog = async (req, res, next) => {
 
 const updateBlog = async (req, res, next) => {
   try {
-    const updated = await genericUpdate({
-      id: req.params.id,
-      user: req.user,
-      body: req.body,
-      Model: Blog,
-      files: req.files
-    });
+    const { id } = req.params;
+    const { action } = req.body;
 
-    return res.status(200).json({
-      message: 'La entrada del blog se ha actualizado correctamente',
-      updated
-    });
-  } catch (error) {
-    if (error.message === 'Imagen no encontrada') {
-      return res.status(404).json('Imagen no encontrada');
-    } else if (error.message === 'Evento no encontrado') {
-      return res.statu(404).json('Entrada de blog no encontrada');
+    const blog = await Blog.findById(id);
+
+    if (!blog) return res.status(404).json('Entrada de blog no encontrada');
+
+    const userId = req.user._id;
+
+    if (action === 'like') {
+      blog.dislikes = blog.dislikes.filter(
+        (user) => user.toString() !== userId.toString()
+      );
+      if (!blog.likes.includes(userId)) {
+        blog.likes.push(userId);
+      }
+    } else if (action === 'dislike') {
+      blog.likes = blog.likes.filter(
+        (user) => user.toString() !== userId.toString()
+      );
+      if (!blog.dislikes.includes(userId)) {
+        blog.dislikes.push(userId);
+      }
     }
-    return res
-      .status(400)
-      .json({ message: `Error en la actualización del blog` });
+
+    if (req.body.body || req.body.title | req.files) {
+      await genericUpdate({
+        id,
+        user: req.user,
+        body: req.body,
+        Model: Blog,
+        files: req.files
+      });
+    }
+
+    await blog.save();
+
+    const updated = await Blog.findById(blog._id)
+      .populate({
+        path: 'comments',
+        populate: { path: 'user', select: 'name lastName' }
+      })
+      .populate({ path: 'likes', select: 'name' })
+      .populate({ path: 'dislikes', select: 'name' })
+      .populate({ path: 'user', select: 'name' });
+
+    return res.status(200).json(updated);
+  } catch (error) {
+    return res.status(400).json({
+      message: `Error en la actualización del post: ${error.message}`
+    });
   }
 };
 

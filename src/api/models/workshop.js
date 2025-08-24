@@ -6,7 +6,7 @@ const workshopSchema = new mongoose.Schema(
     description: { type: String, required: true },
     user: { type: mongoose.Types.ObjectId, required: true, ref: 'users' },
     eventDate: { type: Date, required: true },
-    image: { type: String, required: true },
+    image: { type: String },
     fileUrl: { type: String, required: true },
     comments: [{ type: mongoose.Types.ObjectId, ref: 'comments' }],
     likes: [{ type: mongoose.Types.ObjectId, ref: 'users' }],

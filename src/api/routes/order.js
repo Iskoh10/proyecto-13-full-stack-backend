@@ -12,12 +12,12 @@ const {
 
 const orderRouter = require('express').Router();
 
-orderRouter.get('/filter/:status', [isAdmin], filterOrders);
+orderRouter.get('/filter/:status', [isAuth, isAdmin], filterOrders);
 orderRouter.get('/my-orders', [isAuth], getOrdersByUser);
 orderRouter.get('/:id', [isAuth], getOrderById);
-orderRouter.get('/', [isAdmin], getOrders);
+orderRouter.get('/', [isAuth, isAdmin], getOrders);
 orderRouter.post('/', [isAuth], createOrder);
 orderRouter.put('/:id', [isAuth, checkUser()], updateOrder);
-orderRouter.delete('/:id', [isAdmin], deleteOrder);
+orderRouter.delete('/:id', [isAuth, isAdmin], deleteOrder);
 
 module.exports = orderRouter;

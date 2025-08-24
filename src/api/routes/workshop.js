@@ -21,6 +21,7 @@ workshopRouter.post(
   uploadPDF.single('fileUrl'),
   createWorkshop
 );
+
 workshopRouter.put(
   '/:id',
   [isAuth],
