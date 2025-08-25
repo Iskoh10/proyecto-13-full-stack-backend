@@ -148,6 +148,10 @@ const updateUser = async (req, res, next) => {
       message: [...(oldUser.messages || []), ...(req.body.messages || [])]
     };
 
+    if (req.body.password) {
+      updatedData.password = hashPassword(req.body.password);
+    }
+
     const user = await User.findByIdAndUpdate(id, updatedData, { new: true });
 
     return res
@@ -160,7 +164,13 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.body.id || req.user._id;
+
+    if (req.body.id && req.user.role !== 'admin') {
+      return res
+        .status(403)
+        .json({ message: 'No tienes permiso para eliminar a otros usuarios' });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -177,7 +187,13 @@ const deleteUser = async (req, res, next) => {
       }
     );
 
-    res.clearCookie('token');
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (userId.toString() === req.user._id.toString()) {
+      res.clearCookie('token');
+    }
 
     return res.status(200).json({ message: 'Usuario eliminado correctamente' });
   } catch (error) {
