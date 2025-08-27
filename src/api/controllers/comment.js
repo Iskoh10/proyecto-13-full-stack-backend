@@ -9,7 +9,7 @@ const getComments = async (req, res, next) => {
     const comments = await Comment.find()
       .populate({
         path: 'user',
-        select: 'name'
+        select: 'name lastName'
       })
       .populate({
         path: 'eventId',
@@ -35,7 +35,7 @@ const filterComments = async (req, res, next) => {
   try {
     const comments = await Comment.find({
       $text: { $search: req.params.text }
-    });
+    }).populate('user');
     return res.status(200).json(comments);
   } catch (error) {
     return res.status(400).json('Error en el filtrado de comentarios');

@@ -7,8 +7,20 @@ const Product = require('../models/product');
 
 const getProducts = async (req, res, next) => {
   try {
-    let { page = 1 } = req.query;
+    let { page = 1, all } = req.query;
     page = parseInt(page);
+
+    if (all) {
+      const products = await Product.find().populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name lastName'
+        }
+      });
+
+      return res.status(200).json({ products });
+    }
 
     const { total, lastPage } = await getPaginationInfo(Product);
 
@@ -55,31 +67,15 @@ const filterProducts = async (req, res, next) => {
       filters.price = { $lte: Number(req.query.price) };
     }
 
-    const page = parseInt(req.query.page) || 1;
-    const total = await Product.countDocuments(filters);
-    const lastPage = Math.ceil(total / dataPerPage);
-
-    const products = await Product.find(filters)
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'user',
-          select: 'name lastName'
-        }
-      })
-      .skip((page - 1) * dataPerPage)
-      .limit(dataPerPage);
-
-    return res.status(200).json({
-      info: {
-        total,
-        pages: lastPage,
-        currentPage: page,
-        next: page < lastPage ? page + 1 : null,
-        prev: page > 1 ? page - 1 : null
-      },
-      products
+    const products = await Product.find(filters).populate({
+      path: 'comments',
+      populate: {
+        path: 'user',
+        select: 'name lastName'
+      }
     });
+
+    return res.status(200).json({ message: 'Hemos encontrado a:', products });
   } catch (error) {
     return res.status(400).json('Error al filtrar los productos');
   }

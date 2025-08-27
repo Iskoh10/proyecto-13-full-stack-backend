@@ -4,8 +4,8 @@ const Order = require('../models/order');
 const getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find()
-      .populate('customer', 'name lastName')
-      .populate('items.product', 'nameProduct');
+      .populate('customer', 'name lastName isDeleted phone email')
+      .populate('items.product', 'nameProduct price');
     return res.status(200).json(orders);
   } catch (error) {
     return res.status(400).json('Eeror al recuperar todos los pedidos');
@@ -16,7 +16,8 @@ const filterOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({
       $text: { $search: req.params.status }
-    });
+    }).populate('customer');
+
     return res.status(200).json(orders);
   } catch (error) {
     return res.status(400).json('Error al filtrar los pedidos');
@@ -28,7 +29,7 @@ const getOrderById = async (req, res, next) => {
     const { id } = req.params;
 
     const order = await Order.findById(id)
-      .populate('customer', 'name lastName email address phone')
+      .populate('customer', 'name lastName email address phone ')
       .populate('items.product', 'nameProduct price');
 
     if (!order) {
@@ -120,6 +121,7 @@ const updateOrder = async (req, res, next) => {
       .status(200)
       .json({ message: 'Pedido actualizado correctamente', updatedOrder });
   } catch (error) {
+    console.error(error);
     if (error.message.includes('Producto no encontrado')) {
       return res.status(404).json({ message: error.message });
     }

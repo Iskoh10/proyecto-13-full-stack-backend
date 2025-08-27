@@ -124,7 +124,7 @@ const createBlog = async (req, res, next) => {
 const updateBlog = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { action } = req.body;
+    const { action, available } = req.body;
 
     const blog = await Blog.findById(id);
 
@@ -146,6 +146,10 @@ const updateBlog = async (req, res, next) => {
       if (!blog.dislikes.includes(userId)) {
         blog.dislikes.push(userId);
       }
+    }
+
+    if (available !== undefined) {
+      blog.available = available;
     }
 
     if (req.body.body || req.body.title | req.files) {

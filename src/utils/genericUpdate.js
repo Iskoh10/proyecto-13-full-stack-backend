@@ -13,7 +13,15 @@ const genericUpdate = async ({
   files = ''
 }) => {
   try {
-    let { comments, likes, dislikes, attendees, ratings, ...updateData } = body;
+    let {
+      comments,
+      likes,
+      dislikes,
+      attendees,
+      ratings,
+      available,
+      ...updateData
+    } = body;
 
     comments = normalizeToArray(comments);
     likes = normalizeToArray(likes);
@@ -59,6 +67,19 @@ const genericUpdate = async ({
     }
 
     let updateOps = {};
+
+    const isAdmin = user.role === 'admin';
+
+    if (available !== undefined) {
+      if (isAdmin) {
+        updateOps.$set = {
+          ...(updateOps.$set || {}),
+          available
+        };
+      } else {
+        throw new Error('No tienes permisos para cambiar la disponibilidad');
+      }
+    }
 
     const isOwner = event.user._id.toString() === user._id.toString();
 
