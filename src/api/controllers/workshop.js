@@ -108,19 +108,12 @@ const getWorkshopById = async (req, res, next) => {
 
 const createWorkshop = async (req, res, next) => {
   try {
+    const imageFile = req.file;
     const newWorkshop = new Workshop(req.body);
     newWorkshop.user = req.user._id;
 
-    if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'workshops',
-        resource_type: 'raw'
-      });
-      newWorkshop.fileUrl = uploadResult.secure_url;
-
-      fs.unlink(req.file.path, (error) => {
-        if (error) console.error('Error al eliminar archivo temporal:', error);
-      });
+    if (imageFile) {
+      newWorkshop.image = imageFile.path;
     }
 
     const workshop = await newWorkshop.save();
@@ -133,7 +126,7 @@ const createWorkshop = async (req, res, next) => {
 const updateWorkshop = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { action } = req.body;
+    const { action, available } = req.body;
 
     const workshop = await Workshop.findById(id);
 
@@ -156,7 +149,13 @@ const updateWorkshop = async (req, res, next) => {
         workshop.dislikes.push(userId);
       }
       await workshop.save();
-    } else if (req.body.body || req.body.title || req.files) {
+    }
+
+    if (available !== undefined) {
+      workshop.available = available;
+    }
+
+    if (req.body.body || req.body.title || req.files) {
       await genericUpdate({
         id,
         user: req.user,
@@ -165,6 +164,8 @@ const updateWorkshop = async (req, res, next) => {
         files: req.files
       });
     }
+
+    await workshop.save();
 
     const updated = await Workshop.findById(workshop._id)
       .populate({

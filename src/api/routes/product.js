@@ -17,7 +17,7 @@ productRouter.get('/:id', [isAuth, isAdmin], getProductById);
 productRouter.get('/', getProducts);
 productRouter.post(
   '/',
-  [isAdmin],
+  [isAuth, isAdmin],
   upload.single('productImage'),
   createProduct
 );

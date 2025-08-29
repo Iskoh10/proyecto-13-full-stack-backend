@@ -70,22 +70,16 @@ const genericUpdate = async ({
 
     const isAdmin = user.role === 'admin';
 
-    if (available !== undefined) {
-      if (isAdmin) {
-        updateOps.$set = {
-          ...(updateOps.$set || {}),
-          available
-        };
-      } else {
-        throw new Error('No tienes permisos para cambiar la disponibilidad');
-      }
-    }
-
     const isOwner = event.user._id.toString() === user._id.toString();
 
-    if (isOwner) {
-      if (Object.keys(updateData).length > 0) {
-        updateOps.$set = { ...updateData };
+    if (Object.keys(updateData).length > 0 || available !== undefined) {
+      if (isAdmin || isOwner) {
+        updateOps.$set = {
+          ...updateData,
+          ...(available !== undefined ? { available } : {})
+        };
+      } else {
+        throw new Error('No tienes permiso para modificar.');
       }
     }
 

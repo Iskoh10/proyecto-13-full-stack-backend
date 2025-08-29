@@ -28,6 +28,7 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ nameProduct: 'text' });
+productSchema.index({ price: 1 });
 
 const Product = new mongoose.model('products', productSchema, 'products');
 
