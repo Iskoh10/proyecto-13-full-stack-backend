@@ -1,8 +1,6 @@
 const { deleteFile } = require('../../utils/deleteFile');
 const { genericUpdate } = require('../../utils/genericUpdate');
 const Workshop = require('../models/workshop');
-const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
 
 const getWorkshops = async (req, res, next) => {
   try {
@@ -148,7 +146,6 @@ const updateWorkshop = async (req, res, next) => {
       if (!workshop.dislikes.includes(userId)) {
         workshop.dislikes.push(userId);
       }
-      await workshop.save();
     } else if (action === 'attend') {
       if (workshop.capacity <= 0) {
         return res.status(400).json({ message: 'No hay plazas disponibles' });

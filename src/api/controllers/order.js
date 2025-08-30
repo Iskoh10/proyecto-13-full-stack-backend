@@ -121,7 +121,6 @@ const updateOrder = async (req, res, next) => {
       .status(200)
       .json({ message: 'Pedido actualizado correctamente', updatedOrder });
   } catch (error) {
-    console.error(error);
     if (error.message.includes('Producto no encontrado')) {
       return res.status(404).json({ message: error.message });
     }

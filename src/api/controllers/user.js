@@ -176,6 +176,7 @@ const deleteUser = async (req, res, next) => {
       userId,
       {
         name: 'Usuario Eliminado',
+        lastName: null,
         email: `deleted_${userId}@example.com`,
         phone: null,
         address: null,

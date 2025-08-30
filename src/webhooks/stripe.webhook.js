@@ -1,7 +1,8 @@
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const Order = require('../api/models/order');
 const Product = require('../api/models/product');
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const stripeWebhookHandler = async (req, res, next) => {
   const sig = req.headers['stripe-signature'];

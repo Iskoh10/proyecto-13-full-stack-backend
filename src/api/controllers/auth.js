@@ -1,4 +1,3 @@
-const req = require('express/lib/request');
 const User = require('../models/user');
 
 const getProfile = async (req, res) => {
