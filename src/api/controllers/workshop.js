@@ -149,6 +149,21 @@ const updateWorkshop = async (req, res, next) => {
         workshop.dislikes.push(userId);
       }
       await workshop.save();
+    } else if (action === 'attend') {
+      if (workshop.capacity <= 0) {
+        return res.status(400).json({ message: 'No hay plazas disponibles' });
+      }
+      if (workshop.capacity > 0 && !workshop.attendees.includes(userId)) {
+        workshop.attendees.push(userId);
+        workshop.capacity -= 1;
+      }
+    } else if (action === 'unattend') {
+      if (workshop.attendees.includes(userId)) {
+        workshop.attendees = workshop.attendees.filter(
+          (user) => user.toString() !== userId.toString()
+        );
+        workshop.capacity += 1;
+      }
     }
 
     if (available !== undefined) {
@@ -174,6 +189,7 @@ const updateWorkshop = async (req, res, next) => {
       })
       .populate({ path: 'likes', select: 'name' })
       .populate({ path: 'dislikes', select: 'name' })
+      .populate({ path: 'attendees', select: 'name' })
       .populate({ path: 'user', select: 'name' });
 
     return res.status(200).json(updated);
