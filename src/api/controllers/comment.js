@@ -83,6 +83,7 @@ const createComment = async (req, res, next) => {
     });
 
     const comment = await newComment.save();
+    await comment.populate('user', 'name');
 
     const modelMap = {
       Product,

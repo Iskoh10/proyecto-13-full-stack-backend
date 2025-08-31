@@ -1,6 +1,5 @@
 const { deleteFile } = require('./deleteFile');
 const { normalizeToArray } = require('./normalizeToArray');
-const uploadFileToCloudinary = require('./uploadFileToCloudinary');
 const mongoose = require('mongoose');
 
 const genericUpdate = async ({
@@ -8,7 +7,6 @@ const genericUpdate = async ({
   user,
   body,
   Model,
-  filePdf = '',
   file = '',
   files = ''
 }) => {
@@ -34,13 +32,13 @@ const genericUpdate = async ({
       throw new Error('Evento no encontrado');
     }
 
-    if (filePdf) {
-      const eventToUpdate = await Model.findById(id);
-      deleteFile(eventToUpdate.fileUrl);
+    // if (filePdf) {
+    //   const eventToUpdate = await Model.findById(id);
+    //   deleteFile(eventToUpdate.fileUrl);
 
-      const url = await uploadFileToCloudinary(filePdf.path);
-      updateData.fileUrl = url;
-    }
+    //   const url = await uploadFileToCloudinary(filePdf.path);
+    //   updateData.fileUrl = url;
+    // }
 
     if (file) {
       const eventToUpdate = await Model.findById(id);
