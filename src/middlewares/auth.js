@@ -9,6 +9,7 @@ const isAuth = async (req, res, next) => {
     const user = await User.findById(id);
     user.password = null;
     req.user = user;
+
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Unauthorized' });

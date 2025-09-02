@@ -1,10 +1,11 @@
 const { isAuth } = require('../../middlewares/auth');
+const { loginLimiter } = require('../../middlewares/loginLimiter');
 const getProfile = require('../controllers/auth');
 const { login, logout } = require('../controllers/user');
 
 const authRouter = require('express').Router();
 
-authRouter.post('/login', login);
+authRouter.post('/login', [loginLimiter], login);
 authRouter.post('/logout', logout);
 authRouter.get('/me', isAuth, getProfile);
 
