@@ -28,6 +28,8 @@ app.use(
   })
 );
 
+app.set('trust proxy', 1);
+
 app.use('/api/v1', mainRouter);
 app.use('/api/payments', paymentRouter);
 
