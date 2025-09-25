@@ -72,7 +72,9 @@ const register = async (req, res, next) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      // secure: false,
       sameSite: 'none',
+      // sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24
     });
 
@@ -110,7 +112,9 @@ const login = async (req, res, next) => {
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        // secure: false,
         sameSite: 'none',
+        // sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24
       });
       return res.status(200).json({ user: userNoPassword });

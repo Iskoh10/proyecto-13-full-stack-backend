@@ -6,8 +6,7 @@ const isAuth = async (req, res, next) => {
     const token = req.cookies.token;
     const { id } = jwtVerify(token);
 
-    const user = await User.findById(id);
-    user.password = null;
+    const user = await User.findById(id).select('-password');
     req.user = user;
 
     next();
@@ -20,7 +19,9 @@ const isAdmin = async (req, res, next) => {
   if (req.user.role === 'admin') {
     next();
   } else {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res
+      .status(403)
+      .json({ message: 'Acceso denegado: requiere rol admin' });
   }
 };
 
